@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/joho/godotenv"
 
@@ -10,8 +11,12 @@ import (
 )
 
 func main() {
-	// load .env
-	_ = godotenv.Load()
+	// manual load env
+	if err := godotenv.Load(); err != nil {
+		log.Println("Failed to load env\nCause: ", err.Error())
+		return
+	}
+	log.Println(os.Getenv("DBUSER"))
 
 	// init DB
 	db, err := configs.InitDB()
