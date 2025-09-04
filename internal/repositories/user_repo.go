@@ -64,7 +64,6 @@ func GetAllUsers(ctx context.Context, db *pgxpool.Pool) ([]models.User, error) {
 		return nil, err
 	}
 	defer rows.Close()
-
 	var users []models.User
 	for rows.Next() {
 		var u models.User
