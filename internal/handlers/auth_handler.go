@@ -19,7 +19,6 @@ func LoginHandler(c *gin.Context, db *pgxpool.Pool) {
 		utils.BadRequest(c, err.Error())
 		return
 	}
-
 	u, err := repositories.GetUserByEmail(c.Request.Context(), db, body.Email)
 	if err != nil {
 		utils.Unauthorized(c, "email tidak ditemukan")
