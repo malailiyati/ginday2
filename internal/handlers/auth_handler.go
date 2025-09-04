@@ -11,7 +11,7 @@ import (
 
 func LoginHandler(c *gin.Context, db *pgxpool.Pool) {
 	var body models.Login
-	if err := c.ShouldBindJSON(&body); err != nil {
+	if err := c.ShouldBind(&body); err != nil {
 		utils.BadRequest(c, err.Error())
 		return
 	}
@@ -34,7 +34,7 @@ func LoginHandler(c *gin.Context, db *pgxpool.Pool) {
 
 func RegisterHandler(c *gin.Context, db *pgxpool.Pool) {
 	var body models.Register
-	if err := c.ShouldBindJSON(&body); err != nil {
+	if err := c.ShouldBind(&body); err != nil {
 		utils.BadRequest(c, err.Error())
 		return
 	}
@@ -63,7 +63,7 @@ func PatchUserHandler(c *gin.Context, db *pgxpool.Pool) {
 	}
 
 	var body models.UpdateUser
-	if err := c.ShouldBindJSON(&body); err != nil {
+	if err := c.ShouldBind(&body); err != nil {
 		utils.BadRequest(c, "invalid request body: "+err.Error())
 		return
 	}
