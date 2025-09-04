@@ -7,10 +7,8 @@ import (
 	"github.com/malailiyati/beginnerBackend/internal/models"
 )
 
-// ambil user by email
 func GetUserByEmail(ctx context.Context, db *pgxpool.Pool, email string) (*models.User, error) {
-	const q = `SELECT id, email, password, role, created_at, updated_at 
-	           FROM users WHERE email = $1`
+	const q = `SELECT id, email, password, role, created_at, updated_at FROM users WHERE email = $1`
 	var u models.User
 	if err := db.QueryRow(ctx, q, email).
 		Scan(&u.ID, &u.Email, &u.Password, &u.Role, &u.CreatedAt, &u.UpdatedAt); err != nil {
@@ -19,18 +17,15 @@ func GetUserByEmail(ctx context.Context, db *pgxpool.Pool, email string) (*model
 	return &u, nil
 }
 
-// cek apakah email sudah ada
 func EmailExists(ctx context.Context, db *pgxpool.Pool, email string) (bool, error) {
 	const q = `SELECT 1 FROM users WHERE email = $1`
 	var dummy int
 	if err := db.QueryRow(ctx, q, email).Scan(&dummy); err != nil {
-		// kalau tidak ketemu, Scan error → berarti email belum ada
 		return false, nil
 	}
 	return true, nil
 }
 
-// insert user baru
 func CreateUser(ctx context.Context, db *pgxpool.Pool, email, password string) (*models.User, error) {
 	const q = `
 		INSERT INTO users (email, password, role, created_at, updated_at)
@@ -45,7 +40,6 @@ func CreateUser(ctx context.Context, db *pgxpool.Pool, email, password string) (
 	return &u, nil
 }
 
-// update sebagian (PATCH) by email
 func PatchUserByEmail(ctx context.Context, db *pgxpool.Pool, currentEmail string, body models.UpdateUser) (*models.User, error) {
 	const q = `
 		UPDATE users SET
@@ -63,7 +57,6 @@ func PatchUserByEmail(ctx context.Context, db *pgxpool.Pool, currentEmail string
 	return &u, nil
 }
 
-// ambil semua user (opsional, buat debug)
 func GetAllUsers(ctx context.Context, db *pgxpool.Pool) ([]models.User, error) {
 	const q = `SELECT id, email, password, role, created_at, updated_at FROM users ORDER BY id`
 	rows, err := db.Query(ctx, q)

@@ -3,22 +3,25 @@ package configs
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var Pool *pgxpool.Pool
+func InitDB() (*pgxpool.Pool, error) {
+	dbUser := os.Getenv("DBUSER")
+	dbPass := os.Getenv("DBPASS")
+	dbHost := os.Getenv("DBHOST")
+	dbPort := os.Getenv("DBPORT")
+	dbName := os.Getenv("DBNAME")
 
-func InitPG(ctx context.Context, user, pass, host, port, name string) error {
-	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", user, pass, host, port, name)
-	p, err := pgxpool.New(ctx, dsn)
-	if err != nil {
-		return err
-	}
-	if err := p.Ping(ctx); err != nil {
-		p.Close()
-		return err
-	}
-	Pool = p
-	return nil
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
+		dbUser, dbPass, dbHost, dbPort, dbName,
+	)
+
+	return pgxpool.New(context.Background(), dsn)
+}
+
+func TestDB(db *pgxpool.Pool) error {
+	return db.Ping(context.Background())
 }

@@ -2,31 +2,29 @@ package handlers
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/malailiyati/beginnerBackend/internal/models"
 	"github.com/malailiyati/beginnerBackend/internal/repositories"
 	"github.com/malailiyati/beginnerBackend/internal/utils"
-	"github.com/malailiyati/beginnerBackend/internal/validators"
 )
 
-// POST /login
-func LoginHandler(c *gin.Context) {
+func LoginHandler(c *gin.Context, db *pgxpool.Pool) {
 	var body models.Login
 	if err := c.ShouldBindJSON(&body); err != nil {
 		utils.BadRequest(c, err.Error())
 		return
 	}
-	if err := validators.ValidateLogin(body); err != nil {
+	if err := utils.ValidateLogin(body); err != nil {
 		utils.BadRequest(c, err.Error())
 		return
 	}
 
-	u, err := repositories.GetUserByEmail(c.Request.Context(), body.Email)
+	u, err := repositories.GetUserByEmail(c.Request.Context(), db, body.Email)
 	if err != nil {
 		utils.Unauthorized(c, "email tidak ditemukan")
 		return
 	}
-	// DEMO: plain text; production: hash + bcrypt compare
 	if u.Password != body.Password {
 		utils.Unauthorized(c, "password salah")
 		return
@@ -35,35 +33,32 @@ func LoginHandler(c *gin.Context) {
 	utils.OK(c, gin.H{"id": u.ID, "email": u.Email, "role": u.Role})
 }
 
-// POST /register
-func RegisterHandler(c *gin.Context) {
+func RegisterHandler(c *gin.Context, db *pgxpool.Pool) {
 	var body models.Register
 	if err := c.ShouldBindJSON(&body); err != nil {
 		utils.BadRequest(c, err.Error())
 		return
 	}
-	if err := validators.ValidateRegister(body); err != nil {
+	if err := utils.ValidateRegister(body); err != nil {
 		utils.BadRequest(c, err.Error())
 		return
 	}
-	if ok, _ := repositories.EmailExists(c.Request.Context(), body.Email); ok {
+	if ok, _ := repositories.EmailExists(c.Request.Context(), db, body.Email); ok {
 		utils.Unauthorized(c, "email sudah terdaftar")
 		return
 	}
 
-	u, err := repositories.CreateUser(c.Request.Context(), body.Email, body.Password)
+	u, err := repositories.CreateUser(c.Request.Context(), db, body.Email, body.Password)
 	if err != nil {
 		utils.ServerError(c, "gagal membuat user", err)
 		return
 	}
-	utils.OK(c, gin.H{"id": u.ID, "email": u.Email, "role": u.Role})
+	utils.OK(c, u)
 }
 
-// PATCH /users/:email  (partial update by current email)
-func PatchUserHandler(c *gin.Context) {
+func PatchUserHandler(c *gin.Context, db *pgxpool.Pool) {
 	currentEmail := c.Param("email")
-
-	if _, err := repositories.GetUserByEmail(c.Request.Context(), currentEmail); err != nil {
+	if _, err := repositories.GetUserByEmail(c.Request.Context(), db, currentEmail); err != nil {
 		utils.NotFound(c, "user tidak ditemukan")
 		return
 	}
@@ -73,22 +68,30 @@ func PatchUserHandler(c *gin.Context) {
 		utils.BadRequest(c, "invalid request body: "+err.Error())
 		return
 	}
-	if err := validators.ValidatePatch(body); err != nil {
+	if err := utils.ValidatePatch(body); err != nil {
 		utils.BadRequest(c, err.Error())
 		return
 	}
-	// optional: jika ubah email, cek konflik
 	if body.Email != nil && *body.Email != currentEmail {
-		if ok, _ := repositories.EmailExists(c.Request.Context(), *body.Email); ok {
+		if ok, _ := repositories.EmailExists(c.Request.Context(), db, *body.Email); ok {
 			utils.Conflict(c, "email baru sudah terdaftar")
 			return
 		}
 	}
 
-	u, err := repositories.PatchUserByEmail(c.Request.Context(), currentEmail, body)
+	u, err := repositories.PatchUserByEmail(c.Request.Context(), db, currentEmail, body)
 	if err != nil {
 		utils.ServerError(c, "gagal update user", err)
 		return
 	}
-	utils.OKWithMessage(c, "user updated (partial)", gin.H{"id": u.ID, "email": u.Email, "role": u.Role})
+	utils.OKWithMessage(c, "user updated (partial)", u)
+}
+
+func GetAllUsersHandler(c *gin.Context, db *pgxpool.Pool) {
+	users, err := repositories.GetAllUsers(c.Request.Context(), db)
+	if err != nil {
+		utils.ServerError(c, "gagal mengambil data users", err)
+		return
+	}
+	utils.OK(c, users)
 }

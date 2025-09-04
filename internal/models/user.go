@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-type Users struct {
+type User struct {
 	ID        int        `json:"id"`
 	Email     string     `json:"email"`
 	Password  string     `json:"password"`
@@ -21,7 +21,6 @@ type Register struct {
 	Password string `json:"password"`
 }
 
-// Untuk PATCH partial: pointer biar bisa bedain "tidak dikirim" vs "nilai dikosongkan"
 type UpdateUser struct {
 	Email    *string `json:"email,omitempty"`
 	Password *string `json:"password,omitempty"`
