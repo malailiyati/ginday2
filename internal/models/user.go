@@ -10,7 +10,6 @@ type User struct {
 	CreatedAt *time.Time `json:"created_at,omitempty"`
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
-
 type Login struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
