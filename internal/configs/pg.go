@@ -18,7 +18,6 @@ func InitDB() (*pgxpool.Pool, error) {
 	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
 		dbUser, dbPass, dbHost, dbPort, dbName,
 	)
-
 	return pgxpool.New(context.Background(), dsn)
 }
 
