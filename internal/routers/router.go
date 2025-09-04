@@ -18,6 +18,5 @@ func InitRouter(db *pgxpool.Pool) *gin.Engine {
 	r.POST("/login", func(c *gin.Context) { handlers.LoginHandler(c, db) })
 	r.PATCH("/users/:email", func(c *gin.Context) { handlers.PatchUserHandler(c, db) })
 	r.GET("/users", func(c *gin.Context) { handlers.GetAllUsersHandler(c, db) })
-
 	return r
 }
