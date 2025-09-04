@@ -24,6 +24,7 @@ func ValidateEmail(s string) error {
 	if !emailRe.MatchString(s) {
 		return errors.New("format email tidak valid")
 	}
+
 	return nil
 }
 
