@@ -12,7 +12,6 @@ func CORS() gin.HandlerFunc {
 	whitelist := []string{
 		"http://localhost:5173", // contoh frontend Vite/React
 	}
-
 	return func(c *gin.Context) {
 		origin := c.GetHeader("Origin")
 		if origin != "" && slices.Contains(whitelist, origin) {
